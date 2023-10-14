@@ -1,7 +1,5 @@
 # RepoSyncMonitor
 
-## Description
-
 `RepoSyncMonitor` is a Python script that compares the local and remote Git repositories to check for new commits. 
 
 ## Requirements
