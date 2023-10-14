@@ -1,60 +1,50 @@
-
-from git import Repo
+from git import Repo, exc
 import shutil
 
-repo_name = "to_test_another_repo"
-remote_repo = f"new_{repo_name}"
-local_hash_list = []
-remote_hash_list = []
-
-def remove_dir():
+def remove_dir(path):
+    """Removes a directory."""
     try:
-        shutil.rmtree(remote_repo)
+        shutil.rmtree(path)
         print("Directory removed successfully")
     except OSError as o:
-        print(f"Error, {o.strerror}: {remote_repo}")
+        print(f"Error, {o.strerror}: {path}")
 
 
-def local_repo_hashes():
+def get_local_repo_hashes(repo_name):
+    """Fetch hashes from local repository."""
+
     local_repo = Repo(repo_name)
-
-    # Get a list of all commits on the Main branch
     commits = list(local_repo.iter_commits('main'))
-
-    for i in commits:
-        local_hash_list.append(i)
-        # print(local_hash_list)
-
     print(f" [+] Local hash count: {len(commits)}")
-    return local_hash_list
+    return [commit for commit in commits]
 
 
-def remote_repo_hashes():
-
-    # Clone the repo from Github
-    repo_url = "https://github.com/airrloww/to_test_another_repo"
-    cloned_repo = Repo.clone_from(repo_url, remote_repo)
-
-    # Get a list of all commits on the Main branch
-    commits = list(cloned_repo.iter_commits('main'))
-
-    for i in commits:
-        remote_hash_list.append(i)
-        # print(remote_hash_list)
-        # print(i)
-
-    print(f" [+] Remote hash count: {len(commits)}")
+def get_remote_repo_hashes(repo_url, path_to_clone):
+    """Fetch hashes from remote repository."""
+    try:
+        cloned_repo = Repo.clone_from(repo_url, path_to_clone)
+        commits = list(cloned_repo.iter_commits('main'))
+        print(f" [+] Remote hash count: {len(commits)}")
+        return [commit for commit in commits]
+    except exc.GitCommandError as e:
+        print(f"Error: {str(e)}")
+        return []
 
 
 def main():
-    local_repo_hashes()
-    remote_repo_hashes()
-    # remove_dir()
+    repo_name = "" # Insert dir name
+    remote_repo = f"new_{repo_name}"
+    repo_url = "" # Insert repository URL
+    
+    local_hashes = get_local_repo_hashes(repo_name)
+    remote_hashes = get_remote_repo_hashes(repo_url, remote_repo)
 
-    if len(local_hash_list) == len(remote_hash_list):
+    if len(local_hashes) == len(remote_hashes):
         print("[+] There are no new commits")
-    elif len(local_hash_list) < len(remote_hash_list):
-        print(f"[+] There are {len(remote_hash_list) - len(local_hash_list)} new commits!")
+    elif len(local_hashes) < len(remote_hashes):
+        print(f"[+] There are {len(remote_hashes) - len(local_hashes)} new commits!")
+
+    remove_dir(remote_repo)
 
 if __name__ == '__main__':
     main()
